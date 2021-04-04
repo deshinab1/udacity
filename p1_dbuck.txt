@@ -1,0 +1,69 @@
+Question 1/ Slide 1
+Which family movies were rented most frequently?
+
+SELECT 	f.title film_title,
+	c.name category_name,
+        COUNT(*) rental_count
+FROM 	rental r
+JOIN 	inventory i 
+ON 	i.inventory_id = r.inventory_id
+JOIN 	film f 
+ON 	i.film_id = f.film_id
+JOIN 	film_category f_c 
+ON 	f_c.film_id = f.film_id
+JOIN 	category c 
+ON 	c.category_id = f_c.category_id
+WHERE c.name IN ('Animation', 'Children', 'Classics', 'Comedy', 'Family', 'Music')
+GROUP BY 1,2
+ORDER BY 3 DESC
+LIMIT 15
+
+
+Question 2 / Slide 2
+Are family movies with longer rental durations rented more often then those with shorter rental durations?
+
+SELECT 	f.title film_title, 
+	c.name category_name,
+        f.rental_duration duration,
+        NTILE(4) OVER (ORDER BY f.rental_duration) quartile
+FROM 	film f
+JOIN 	film_category f_c 
+ON 	f.film_id = f_c.film_id
+JOIN 	category c ON c.category_id = f_c.category_id
+WHERE c.name IN ('Animation', 'Children', 'Classics', 'Comedy', 'Family', 'Music')
+
+
+Question 3 / Slide 3
+Which categories earn the most revenue?
+
+
+SELECT 	c.name category,
+	sum(amount) total
+FROM	payment p
+JOIN 	rental r 
+ON 	p.rental_id = r.rental_id
+JOIN 	inventory i 
+ON 	i.inventory_id = r.inventory_id
+JOIN 	film f 
+ON 	f.film_id = i.film_id
+JOIN 	film_category f_c 
+ON 	f.film_id = f_c.film_id
+JOIN 	category c ON c.category_id = f_c.category_id    
+GROUP BY 1
+ORDER BY 2 DESC
+
+Question 4/ Slide 4
+In which months were the most rentals purchased?
+
+SELECT 	DATE_PART ('month', rental_date) month_num,
+	CASE WHEN DATE_PART ('month', rental_date) = 2 THEN 'February'
+    	WHEN DATE_PART ('month', rental_date) = 5 THEN 'May'
+    	WHEN DATE_PART ('month', rental_date)  = 6 THEN 'June'
+    	WHEN DATE_PART ('month', rental_date)  = 7 THEN 'July'
+  	WHEN DATE_PART ('month', rental_date)  = 8 THEN 'August' END AS rental_month, 
+	COUNT(*) count_rentals
+FROM	rental r
+JOIN 	staff s 
+ON 	s.staff_id = r.staff_id
+GROUP BY 1
+ORDER BY 1
